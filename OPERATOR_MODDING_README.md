@@ -48,7 +48,7 @@
 
 ### Python scripts included in this repo
 
-- `operator_mesh_swapper.py` — GUI tool for mesh swapping
+- `operator_mesh_swapper.py` — GUI tool for mesh swapping (v3, pipeline-aware)
 - `operator_stat_editor.py` — GUI tool for MonoBehaviour stat editing
 - `operator_new_item.py` — GUI wizard for new item creation
 
@@ -118,10 +118,21 @@ Unity 6 stores vertex data in external `.resS` companion files. The key insight 
 ### Step 4 — Swap the mesh
 
 1. Run `python operator_mesh_swapper.py`
-2. Browse to the original `.bundle`
-3. Browse to your replacement OBJ
-4. Click **Scan Bundle for Meshes** → select the target mesh from the list
-5. Set output path and click **Run Mesh Swap**
+2. **Mesh Swap tab** — browse to the original `.bundle` and your replacement OBJ
+3. Click **Scan Bundle** → select the target mesh from the list
+4. **Coordinates tab** — select the correct pipeline preset (see below)
+5. Set output path and click **▶ Run Mesh Swap**
+
+#### Coordinate preset guide
+
+| Preset | When to use |
+|---|---|
+| **AssetStudio + Blender** *(default)* | OBJ exported from AssetStudio → edited in Blender → re-imported. Flips Z, no winding reversal. |
+| **Raw OBJ (Classic)** | Fresh OBJ not extracted via AssetStudio. Flips X, reverses winding. |
+| **Unity Native** | OBJ already in Unity coordinate space. No conversion. |
+| **Custom** | Use the manual Flip X / Y / Z toggles and Winding Reversal checkbox to configure freely. |
+
+> **Recommended for this pipeline:** `AssetStudio + Blender` — confirmed correct for static meshes exported via AssetStudioGUI with the `-Z` forward / `Y` up Blender export settings above.
 
 ### Step 5 — Deploy
 
@@ -135,8 +146,12 @@ Unity 6 stores vertex data in external `.resS` companion files. The key insight 
 |---|---|
 | Game crashes on load | Submesh count mismatch — check material slots in Blender match original `m_SubMeshes` size |
 | Mesh invisible | Missing UV map — ensure at least one UV map exists before exporting |
-| See-through / transparent faces | Normals issue — Mesh → Normals → Recalculate Outside in Blender |
+| See-through / transparent faces | Normals facing wrong way — switch to `Raw OBJ (Classic)` preset, or enable **Reverse Triangle Winding** in the Coordinates tab |
+| Mesh is rotated ~180° | Wrong coordinate preset — try `AssetStudio + Blender` (Z-flip) instead of `Raw OBJ (Classic)` (X-flip) |
+| Shading appears black / fully dark | Double handedness conversion — confirm you are using `AssetStudio + Blender` preset with no extra X flip active |
+| Subtle shading artifacts after swap | Tangent reconstruction issue — enable **Preserve Original Tangents** in the Coordinates tab to isolate |
 | Mesh disappears at distance | LOD issue — swap all LOD variants (same base name with `.001`, `.002` suffixes) |
+| Need to debug coordinate conversion | Enable **Export reconstructed mesh as OBJ** in the Coordinates tab, then open the output in Blender and compare against the original |
 
 ---
 
@@ -148,11 +163,10 @@ UABEA's texture plugin works natively on Unity 6 bundles even though most other 
 
 ### Substance Painter export settings
 
-- **Template:** `HDRI/HDRP (Metallic Standard) or Unity High Definition Render Pipeline (HDRP)`
+- **Template:** `Unity Universal Render Pipeline (Metallic Standard)`
+  > ⚠️ Do NOT use HD Render Pipeline — OPERATOR uses URP
 - **Format:** PNG, match original texture resolution (check in AssetStudio)
 - This exports: `Albedo`, `Normal` (OpenGL), `Mask` (packed Metallic/AO/Smoothness), `Emission`
-The texture slots this material uses:
-Slot in materialSubstance export mapNotes_BaseColorMapBase Color (Albedo)RGB color_MaskMapMask MapR=Metallic, G=Occlusion, B=Detail, A=Smoothness — HDRP packed format_NormalMapNormal (DirectX)HDRP uses DirectX normals (green channel NOT flipped)
 
 ### Step-by-step
 
@@ -337,10 +351,10 @@ If you want to push this further, here's where things stand:
 ### Medium priority
 - **Full WeaponMod schema documentation** — map all `AssetReferenceIndex` values (1–1444) to their in-game items
 - **Attachment type mapping refinement** — types 8, 12, 13, 17, 20, 22 need better documentation
-- **Animation-aware mesh swapping** — currently static meshes only; skinned/animated meshes need bone weight matching
+- **Animation-aware mesh swapping** — v3 preserves skinning channel bytes from the original (BlendWeight / BlendIndices) but true skinned mesh replacement with bone weight remapping is not yet implemented
 
 ### Nice to have
-- **GUI improvements** — the three Python tools work but could be more polished
+- **GUI improvements** — `operator_mesh_swapper.py` received a major v3 overhaul (coordinate presets, validation panel, tangent debugging, roundtrip OBJ export); stat editor and new item wizard could use similar polish
 - **Batch processing** — tools to process multiple bundles at once
 - **Mod manager** — a tool to manage and toggle mods without manually replacing files
 
@@ -356,7 +370,11 @@ python operator_mesh_swapper.py
 
 **Tabs:**
 - **Mesh Swap** — Browse bundle + OBJ, scan for mesh names, run swap
+- **Coordinates** — Pipeline preset selector (AssetStudio + Blender / Raw OBJ / Unity Native / Custom), triangle winding reversal, per-axis flip toggles (X/Y/Z), tangent preservation mode, OBJ roundtrip export for debugging
+- **Inspector** — Full vertex channel layout of selected mesh before swapping (stride, format, preserve/replace status per channel)
+- **Validation** — Decoded positions, normals, tangents, and handedness values for first 5 vertices — auto-populated after each swap
 - **Log** — Full output
+- **About** — Version info and support link
 
 ### operator_stat_editor.py
 
