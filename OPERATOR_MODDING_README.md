@@ -148,10 +148,11 @@ UABEA's texture plugin works natively on Unity 6 bundles even though most other 
 
 ### Substance Painter export settings
 
-- **Template:** `Unity Universal Render Pipeline (Metallic Standard)`
-  > ⚠️ Do NOT use HD Render Pipeline — OPERATOR uses URP
+- **Template:** `HDRI/HDRP (Metallic Standard) or Unity High Definition Render Pipeline (HDRP)`
 - **Format:** PNG, match original texture resolution (check in AssetStudio)
 - This exports: `Albedo`, `Normal` (OpenGL), `Mask` (packed Metallic/AO/Smoothness), `Emission`
+The texture slots this material uses:
+Slot in materialSubstance export mapNotes_BaseColorMapBase Color (Albedo)RGB color_MaskMapMask MapR=Metallic, G=Occlusion, B=Detail, A=Smoothness — HDRP packed format_NormalMapNormal (DirectX)HDRP uses DirectX normals (green channel NOT flipped)
 
 ### Step-by-step
 
