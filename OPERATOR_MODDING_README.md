@@ -31,7 +31,7 @@
 | Texture swapping | ✅ Working | Via UABEA plugin |
 | Stat editing | ✅ Working | Weight, recoil, ergonomics etc. confirmed in-game |
 | New item creation | 🔄 In progress | Catalog patching approach identified, needs testing |
-| IL2CPP code hooks | ❌ Blocked | Metadata v39 unsupported by all current tools |
+| IL2CPP code hooks | ✅ Working | Il2cpp dump + Bepinex plugin |
 
 ---
 
