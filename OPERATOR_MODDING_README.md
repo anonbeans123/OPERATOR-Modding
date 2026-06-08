@@ -44,7 +44,6 @@
 | Blender | 3.x+ | Mesh editing and export | [blender.org](https://www.blender.org) |
 | Python | 3.10+ | Running the pipeline scripts | [python.org](https://www.python.org) |
 | UnityPy | Latest | Bundle read/write | `pip install UnityPy` |
-| Unity Editor | **6000.3.8f1 exactly** | Mesh serialization (optional path) | Unity Hub |
 
 ### Python scripts included in this repo
 
